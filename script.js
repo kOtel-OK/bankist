@@ -3,7 +3,7 @@
 // Data
 const account1 = {
   owner: 'Roman Kotelnykov',
-  movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
+  movements: [200, 450, -400, 3000, -650, -130, 70, 1300, 200],
   interestRate: 1.2, // %
   pin: 1111,
 };
@@ -75,6 +75,12 @@ const displayMovements = function (movements) {
   });
 };
 
+const displayBalance = function (movements) {
+  const balance = movements.reduce((acc, el) => (acc += el));
+
+  labelBalance.textContent = `${balance}€`;
+};
+
 const createUserNames = function (accounts) {
   accounts.forEach(el => {
     el.username = el.owner
@@ -83,6 +89,7 @@ const createUserNames = function (accounts) {
       .join(''); //join an array to a string
   });
 };
+
 createUserNames(accounts);
-console.log(accounts);
-displayMovements(account1.movements);
+displayMovements(account2.movements);
+displayBalance(account2.movements);
