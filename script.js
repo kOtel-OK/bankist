@@ -3,7 +3,7 @@
 // Data
 const account1 = {
   owner: 'Roman Kotelnykov',
-  movements: [200, 450, -400, 3000, -650, -130, 70, 1300, 200],
+  movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
   interestRate: 1.2, // %
   pin: 1111,
 };
@@ -75,10 +75,27 @@ const displayMovements = function (movements) {
   });
 };
 
-const displayBalance = function (movements) {
+const calculateBalance = function (movements) {
   const balance = movements.reduce((acc, el) => (acc += el));
 
   labelBalance.textContent = `${balance}€`;
+};
+
+const calculateSummary = function (movements) {
+  const incomes = movements.reduce((acc, el) => (el > 0 ? acc + el : acc), 0);
+  const withdrawal = movements.reduce(
+    (acc, el) => (el < 0 ? acc + Math.abs(el) : acc),
+    0
+  );
+  const interest = movements
+    .filter(el => el > 0)
+    .map(el => (el * 1.2) / 100)
+    .filter(el => el > 1)
+    .reduce((acc, el) => acc + el);
+
+  labelSumIn.textContent = `${incomes}€`;
+  labelSumOut.textContent = `${withdrawal}€`;
+  labelSumInterest.textContent = `${interest}€`;
 };
 
 const createUserNames = function (accounts) {
@@ -91,5 +108,6 @@ const createUserNames = function (accounts) {
 };
 
 createUserNames(accounts);
-displayMovements(account2.movements);
-displayBalance(account2.movements);
+displayMovements(account1.movements);
+calculateBalance(account1.movements);
+calculateSummary(account1.movements);
