@@ -72,8 +72,17 @@ const displayMovements = function (movements) {
     `;
 
     containerMovements.insertAdjacentHTML('afterbegin', html);
-    console.log(mov);
   });
 };
 
+const createUserNames = function (accounts) {
+  accounts.forEach(el => {
+    el.username = el.owner
+      .split(' ') //split a string to an array by ' '
+      .map(el => el[0].toLowerCase()) //returning a new array with first letters
+      .join(''); //join an array to a string
+  });
+};
+createUserNames(accounts);
+console.log(accounts);
 displayMovements(account1.movements);
