@@ -30,6 +30,7 @@ const account4 = {
 };
 
 const accounts = [account1, account2, account3, account4];
+let currentAccount;
 
 // Elements
 const labelWelcome = document.querySelector('.welcome');
@@ -82,6 +83,7 @@ const calculateBalance = function (movements) {
 };
 
 const calculateSummary = function (movements) {
+  console.log(currentAccount);
   const incomes = movements.reduce((acc, el) => (el > 0 ? acc + el : acc), 0);
   const withdrawal = movements.reduce(
     (acc, el) => (el < 0 ? acc + Math.abs(el) : acc),
@@ -89,7 +91,7 @@ const calculateSummary = function (movements) {
   );
   const interest = movements
     .filter(el => el > 0)
-    .map(el => (el * 1.2) / 100)
+    .map(el => (el * currentAccount.interestRate) / 100)
     .filter(el => el > 1)
     .reduce((acc, el) => acc + el);
 
@@ -107,7 +109,59 @@ const createUserNames = function (accounts) {
   });
 };
 
+const logOutTimer = function (min = 5, sec = 0) {
+  let timeToLogOut = (min * 60 + sec) * 1000; //convert total time to milleseconds
+
+  const counter = setInterval(function () {
+    if (sec === 0) {
+      min -= 1;
+      sec = 59;
+    } else {
+      sec -= 1;
+    }
+
+    timeToLogOut -= 1000;
+    labelTimer.textContent = `${String(min).length === 1 ? '0' + min : min}:${
+      String(sec).length === 1 ? '0' + sec : sec
+    }`;
+  }, 1000);
+
+  setTimeout(function () {
+    clearInterval(counter);
+
+    containerApp.style.opacity = '0';
+    labelWelcome.textContent = 'Log in to get started';
+  }, timeToLogOut);
+};
+
+const login = function (e) {
+  e.preventDefault();
+  const user = inputLoginUsername.value;
+  const pin = Number(inputLoginPin.value);
+
+  if (pin && user) {
+    currentAccount = accounts.find(el => el.username === user);
+    if (currentAccount?.pin === pin) {
+      //checking with optional chaining if account exist
+      containerApp.style.opacity = '1';
+      labelWelcome.textContent = `Welcome back, ${
+        currentAccount.owner.split(' ')[0]
+      }`;
+      //clearing the input fields
+      //assigment sign works from right to left, so we can do this
+      inputLoginUsername.value = inputLoginPin.value = '';
+      //remove focus
+      inputLoginPin.blur();
+      inputLoginUsername.blur();
+
+      displayMovements(currentAccount.movements);
+      calculateBalance(currentAccount.movements);
+      calculateSummary(currentAccount.movements);
+      logOutTimer(1, 5); //set minutes and seconds to log out
+    }
+  }
+};
+
 createUserNames(accounts);
-displayMovements(account1.movements);
-calculateBalance(account1.movements);
-calculateSummary(account1.movements);
+
+btnLogin.addEventListener('click', login);
