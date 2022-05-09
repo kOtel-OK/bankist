@@ -3,6 +3,7 @@
 // Data
 const account1 = {
   owner: 'Roman Kotelnykov',
+  accountNumber: 5199304798345699,
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
   interestRate: 1.2, // %
   pin: 1111,
@@ -10,6 +11,7 @@ const account1 = {
 
 const account2 = {
   owner: 'Jessica Davis',
+  accountNumber: 5199091874857111,
   movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
   interestRate: 1.5,
   pin: 2222,
@@ -31,11 +33,18 @@ const account4 = {
 
 const accounts = [account1, account2, account3, account4];
 let currentAccount;
+let timeCounter;
+let timeTimer;
+let accNameMasked;
+let accNameVisibled;
+let accountVisibility;
 
 // Elements
 const labelWelcome = document.querySelector('.welcome');
 const labelDate = document.querySelector('.date');
 const labelBalance = document.querySelector('.balance__value');
+const labelAccountNumber = document.querySelector('.account__number');
+const labelAccountVisibility = document.querySelector('.acc_visibility__lable');
 const labelSumIn = document.querySelector('.summary__value--in');
 const labelSumOut = document.querySelector('.summary__value--out');
 const labelSumInterest = document.querySelector('.summary__value--interest');
@@ -58,6 +67,50 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+const createAccountNumber = function () {
+  if (
+    currentAccount.accountNumber &&
+    String(currentAccount.accountNumber).length === 16
+  ) {
+    accNameVisibled = String(currentAccount.accountNumber)
+      .split('')
+      .map((el, idx) => (idx % 4 === 0 ? ' ' + el : el))
+      .join('');
+
+    accNameMasked = [];
+
+    for (const [idx, el] of accNameVisibled.split(' ').entries()) {
+      if (el) {
+        if (idx !== 0 && idx !== accNameVisibled.split(' ').length - 1) {
+          accNameMasked.push('xxxx');
+        } else {
+          accNameMasked.push(el);
+        }
+      }
+    }
+
+    accNameMasked = accNameMasked.join(' ');
+    labelAccountNumber.textContent = accNameMasked;
+    accountVisibility = false;
+
+    labelAccountVisibility.addEventListener('click', displayAccountNumber);
+  } else
+    console.error(
+      String(currentAccount.accountNumber).length,
+      'Check an account number!'
+    );
+};
+
+const displayAccountNumber = function () {
+  if (accountVisibility) {
+    labelAccountNumber.textContent = accNameMasked;
+    accountVisibility = false;
+  } else {
+    labelAccountNumber.textContent = accNameVisibled;
+    accountVisibility = true;
+  }
+};
+
 const displayMovements = function (movements) {
   containerMovements.innerHTML = '';
   movements.forEach(function (mov, idx) {
@@ -77,13 +130,11 @@ const displayMovements = function (movements) {
 };
 
 const calculateBalance = function (movements) {
-  const balance = movements.reduce((acc, el) => (acc += el));
-
-  labelBalance.textContent = `${balance}€`;
+  currentAccount.balance = movements.reduce((acc, el) => (acc += el));
+  labelBalance.textContent = `${currentAccount.balance}€`;
 };
 
 const calculateSummary = function (movements) {
-  console.log(currentAccount);
   const incomes = movements.reduce((acc, el) => (el > 0 ? acc + el : acc), 0);
   const withdrawal = movements.reduce(
     (acc, el) => (el < 0 ? acc + Math.abs(el) : acc),
@@ -109,10 +160,42 @@ const createUserNames = function (accounts) {
   });
 };
 
+const updateUI = function () {
+  displayMovements(currentAccount.movements);
+  calculateBalance(currentAccount.movements);
+  calculateSummary(currentAccount.movements);
+  logOutTimer(10, 5); //set minutes and seconds to reset logout timer
+};
+
+const transferMoney = function (e) {
+  e.preventDefault();
+  const recipient = accounts.find(el => el.username === inputTransferTo.value);
+  const amount = Number(inputTransferAmount.value);
+  //checking exists and if recipient not the same as a sender
+  //checking if sum is positive and if money enought to transfer
+  if (
+    recipient &&
+    recipient !== currentAccount &&
+    amount > 0 &&
+    currentAccount.balance >= amount
+  ) {
+    recipient.movements.push(amount);
+    currentAccount.movements.push(-Math.abs(amount));
+
+    inputTransferTo.value = inputTransferAmount.value = '';
+    inputTransferTo.blur();
+    inputTransferAmount.blur();
+
+    updateUI();
+  }
+};
+
 const logOutTimer = function (min = 5, sec = 0) {
+  timeCounter && clearInterval(timeCounter) && clearTimeout(timeTimer);
+
   let timeToLogOut = (min * 60 + sec) * 1000; //convert total time to milleseconds
 
-  const counter = setInterval(function () {
+  timeCounter = setInterval(function () {
     if (sec === 0) {
       min -= 1;
       sec = 59;
@@ -126,8 +209,8 @@ const logOutTimer = function (min = 5, sec = 0) {
     }`;
   }, 1000);
 
-  setTimeout(function () {
-    clearInterval(counter);
+  timeTimer = setTimeout(function () {
+    // clearInterval(timeCounter);
 
     containerApp.style.opacity = '0';
     labelWelcome.textContent = 'Log in to get started';
@@ -144,9 +227,12 @@ const login = function (e) {
     if (currentAccount?.pin === pin) {
       //checking with optional chaining if account exist
       containerApp.style.opacity = '1';
+
       labelWelcome.textContent = `Welcome back, ${
         currentAccount.owner.split(' ')[0]
       }`;
+
+      createAccountNumber();
       //clearing the input fields
       //assigment sign works from right to left, so we can do this
       inputLoginUsername.value = inputLoginPin.value = '';
@@ -154,10 +240,7 @@ const login = function (e) {
       inputLoginPin.blur();
       inputLoginUsername.blur();
 
-      displayMovements(currentAccount.movements);
-      calculateBalance(currentAccount.movements);
-      calculateSummary(currentAccount.movements);
-      logOutTimer(1, 5); //set minutes and seconds to log out
+      updateUI();
     }
   }
 };
@@ -165,3 +248,4 @@ const login = function (e) {
 createUserNames(accounts);
 
 btnLogin.addEventListener('click', login);
+btnTransfer.addEventListener('click', transferMoney);
