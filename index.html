@@ -83,7 +83,9 @@
         <p class="summary__value summary__value--out">0000€</p>
         <p class="summary__label">Interest</p>
         <p class="summary__value summary__value--interest">0000€</p>
-        <button class="btn--sort">&downarrow; SORT</button>
+        <button class="btn--sort">
+          <span class="material-icons sort__label"> arrow_upward </span> SORT
+        </button>
       </div>
 
       <!-- OPERATION: TRANSFERS -->
@@ -113,8 +115,9 @@
         <h2>Close account</h2>
         <form class="form form--close">
           <input type="text" class="form__input form__input--user" />
+          <!-- use type password -->
           <input
-            type="password"
+            type="text"
             maxlength="6"
             class="form__input form__input--pin"
           />

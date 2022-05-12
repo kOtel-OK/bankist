@@ -32,12 +32,15 @@ const account4 = {
 };
 
 const accounts = [account1, account2, account3, account4];
+
 let currentAccount;
 let timeCounter;
 let timeTimer;
 let accNameMasked;
 let accNameVisibled;
+//state variables
 let accountVisibility;
+let sortedMaxToMin;
 
 // Elements
 const labelWelcome = document.querySelector('.welcome');
@@ -49,6 +52,7 @@ const labelSumIn = document.querySelector('.summary__value--in');
 const labelSumOut = document.querySelector('.summary__value--out');
 const labelSumInterest = document.querySelector('.summary__value--interest');
 const labelTimer = document.querySelector('.timer');
+const labelSort = document.querySelector('.sort__label');
 
 const containerApp = document.querySelector('.app');
 const containerMovements = document.querySelector('.movements');
@@ -82,7 +86,7 @@ const createAccountNumber = function () {
     for (const [idx, el] of accNameVisibled.split(' ').entries()) {
       if (el) {
         if (idx !== 0 && idx !== accNameVisibled.split(' ').length - 1) {
-          accNameMasked.push('xxxx');
+          accNameMasked.push('XXXX');
         } else {
           accNameMasked.push(el);
         }
@@ -190,6 +194,57 @@ const transferMoney = function (e) {
   }
 };
 
+const loanRequests = function (e) {
+  e.preventDefault();
+  const loan = Number(inputLoanAmount.value);
+
+  if (
+    loan > 0 &&
+    currentAccount.movements.some(el => el > loan + (loan / 100) * 10)
+  ) {
+    currentAccount.movements.push(loan);
+    console.log(`Loan for ${loan} has been approved`);
+
+    inputLoanAmount.value = '';
+    inputLoanAmount.blur();
+
+    updateUI();
+  } else {
+    console.error(`Loan for ${loan} has been denied`);
+  }
+};
+
+const sortMovements = function () {
+  if (!sortedMaxToMin) {
+    currentAccount.movements.sort((a, b) => (a < b ? -1 : 1));
+    labelSort.textContent = 'arrow_upward';
+    sortedMaxToMin = true;
+  } else {
+    currentAccount.movements.sort((a, b) => (a > b ? -1 : 1));
+    labelSort.textContent = 'arrow_downward';
+    sortedMaxToMin = false;
+  }
+  updateUI();
+};
+
+const closeAccount = function (e) {
+  e.preventDefault();
+  const user = inputCloseUsername.value;
+  const pin = Number(inputClosePin.value);
+  if (currentAccount.username === user && currentAccount.pin === pin) {
+    //using findIndex to find index of account to be removed
+    const idx = accounts.findIndex(el => el.owner === currentAccount.owner);
+    console.log(idx);
+    accounts.splice(idx, 1);
+    //set deleted accoun to undefined
+    currentAccount = undefined;
+    inputClosePin.value = inputCloseUsername.value = '';
+
+    containerApp.style.opacity = '0';
+    labelWelcome.textContent = `Log in to get started`;
+  }
+};
+
 const logOutTimer = function (min = 5, sec = 0) {
   timeCounter && clearInterval(timeCounter) && clearTimeout(timeTimer);
 
@@ -233,6 +288,7 @@ const login = function (e) {
       }`;
 
       createAccountNumber();
+      // sortMovements();
       //clearing the input fields
       //assigment sign works from right to left, so we can do this
       inputLoginUsername.value = inputLoginPin.value = '';
@@ -249,3 +305,6 @@ createUserNames(accounts);
 
 btnLogin.addEventListener('click', login);
 btnTransfer.addEventListener('click', transferMoney);
+btnClose.addEventListener('click', closeAccount);
+btnLoan.addEventListener('click', loanRequests);
+btnSort.addEventListener('click', sortMovements);
