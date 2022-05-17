@@ -4,9 +4,21 @@
 const account1 = {
   owner: 'Roman Kotelnykov',
   accountNumber: 5199304798345699,
-  movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
+  movements: [22200, 450, -400, 3000, -650, -130, 70, 1300],
   interestRate: 1.2, // %
   pin: 1111,
+  movementsDates: [
+    '2019-11-18T21:31:17.178Z',
+    '2019-12-23T07:42:02.383Z',
+    '2020-01-28T09:15:04.904Z',
+    '2020-04-01T10:17:24.185Z',
+    '2020-05-08T14:11:59.604Z',
+    '2020-05-27T17:01:17.194Z',
+    '2020-07-11T23:36:17.929Z',
+    '2020-07-12T10:51:36.790Z',
+  ],
+  currency: 'EUR',
+  locale: 'pt-PT', // de-DE
 };
 
 const account2 = {
@@ -15,23 +27,35 @@ const account2 = {
   movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
   interestRate: 1.5,
   pin: 2222,
+  movementsDates: [
+    '2019-11-01T13:15:33.035Z',
+    '2019-11-30T09:48:16.867Z',
+    '2019-12-25T06:04:23.907Z',
+    '2020-01-25T14:18:46.235Z',
+    '2020-02-05T16:33:06.386Z',
+    '2020-04-10T14:43:26.374Z',
+    '2020-06-25T18:49:59.371Z',
+    '2020-07-26T12:01:20.894Z',
+  ],
+  currency: 'USD',
+  locale: 'en-US',
 };
 
-const account3 = {
-  owner: 'Steven Thomas Williams',
-  movements: [200, -200, 340, -300, -20, 50, 400, -460],
-  interestRate: 0.7,
-  pin: 3333,
-};
+// const account3 = {
+//   owner: 'Steven Thomas Williams',
+//   movements: [200, -200, 340, -300, -20, 50, 400, -460],
+//   interestRate: 0.7,
+//   pin: 3333,
+// };
 
-const account4 = {
-  owner: 'Sarah Smith',
-  movements: [430, 1000, 700, 50, 90],
-  interestRate: 1,
-  pin: 4444,
-};
+// const account4 = {
+//   owner: 'Sarah Smith',
+//   movements: [430, 1000, 700, 50, 90],
+//   interestRate: 1,
+//   pin: 4444,
+// };
 
-const accounts = [account1, account2, account3, account4];
+const accounts = [account1, account2];
 
 let currentAccount;
 let timeCounter;
@@ -78,7 +102,7 @@ const createAccountNumber = function () {
   ) {
     accNameVisibled = String(currentAccount.accountNumber)
       .split('')
-      .map((el, idx) => (idx % 4 === 0 ? ' ' + el : el))
+      .map((el, idx) => (idx % 4 === 0 ? ' ' + el : el)) //remainderoperator
       .join('');
 
     accNameMasked = [];
@@ -115,17 +139,50 @@ const displayAccountNumber = function () {
   }
 };
 
-const displayMovements = function (movements) {
+const displayDate = function (date = Date.now(), showHour = false) {
+  const dateOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    // weekday: 'short',
+  };
+
+  if (showHour) {
+    dateOptions.hour = 'numeric';
+    dateOptions.minute = 'numeric';
+  }
+
+  return new Intl.DateTimeFormat(currentAccount.locale, dateOptions).format(
+    new Date(date)
+  );
+};
+
+const formatCurrency = function (value, locale, currency) {
+  const options = {
+    style: 'currency',
+    currency: currency,
+  };
+
+  return Intl.NumberFormat(locale, options).format(value);
+};
+
+const displayMovements = function (currentAccount) {
   containerMovements.innerHTML = '';
-  movements.forEach(function (mov, idx) {
+  currentAccount.movements.forEach(function (mov, idx) {
+    const movementDate = currentAccount.movementsDates[idx];
     const movementType = mov > 0 ? 'deposit' : 'withdrawal';
+
     const html = `
     <div class="movements__row">
     <div class="movements__type movements__type--${movementType}">${
       idx + 1
     } ${movementType}</div>
-    <div class="movements__date">3 days ago</div>
-    <div class="movements__value">${mov}</div>
+    <div class="movements__date">${displayDate(movementDate, true)}</div>
+    <div class="movements__value">${formatCurrency(
+      mov,
+      currentAccount.locale,
+      currentAccount.currency
+    )}</div>
     </div>
     `;
 
@@ -134,8 +191,15 @@ const displayMovements = function (movements) {
 };
 
 const calculateBalance = function (movements) {
-  currentAccount.balance = movements.reduce((acc, el) => (acc += el));
-  labelBalance.textContent = `${currentAccount.balance}€`;
+  const balance = (currentAccount.balance = movements.reduce(
+    (acc, el) => (acc += el)
+  ));
+
+  labelBalance.textContent = `${formatCurrency(
+    balance,
+    currentAccount.locale,
+    currentAccount.currency
+  )}`;
 };
 
 const calculateSummary = function (movements) {
@@ -150,9 +214,21 @@ const calculateSummary = function (movements) {
     .filter(el => el > 1)
     .reduce((acc, el) => acc + el);
 
-  labelSumIn.textContent = `${incomes}€`;
-  labelSumOut.textContent = `${withdrawal}€`;
-  labelSumInterest.textContent = `${interest}€`;
+  labelSumIn.textContent = `${formatCurrency(
+    incomes,
+    currentAccount.locale,
+    currentAccount.currency
+  )}`;
+  labelSumOut.textContent = `${formatCurrency(
+    withdrawal,
+    currentAccount.locale,
+    currentAccount.currency
+  )}`;
+  labelSumInterest.textContent = `${formatCurrency(
+    interest,
+    currentAccount.locale,
+    currentAccount.currency
+  )}`;
 };
 
 const createUserNames = function (accounts) {
@@ -165,7 +241,7 @@ const createUserNames = function (accounts) {
 };
 
 const updateUI = function () {
-  displayMovements(currentAccount.movements);
+  displayMovements(currentAccount);
   calculateBalance(currentAccount.movements);
   calculateSummary(currentAccount.movements);
   logOutTimer(10, 5); //set minutes and seconds to reset logout timer
@@ -175,6 +251,7 @@ const transferMoney = function (e) {
   e.preventDefault();
   const recipient = accounts.find(el => el.username === inputTransferTo.value);
   const amount = Number(inputTransferAmount.value);
+  const transferDate = new Date().toISOString();
   //checking exists and if recipient not the same as a sender
   //checking if sum is positive and if money enought to transfer
   if (
@@ -184,7 +261,10 @@ const transferMoney = function (e) {
     currentAccount.balance >= amount
   ) {
     recipient.movements.push(amount);
+    recipient.movementsDates.push(transferDate);
+
     currentAccount.movements.push(-Math.abs(amount));
+    currentAccount.movementsDates.push(transferDate);
 
     inputTransferTo.value = inputTransferAmount.value = '';
     inputTransferTo.blur();
@@ -196,31 +276,32 @@ const transferMoney = function (e) {
 
 const loanRequests = function (e) {
   e.preventDefault();
-  const loan = Number(inputLoanAmount.value);
+  const loan = Math.floor(inputLoanAmount.value);
+  const transferDate = new Date().toISOString();
 
   if (
     loan > 0 &&
     currentAccount.movements.some(el => el > loan + (loan / 100) * 10)
   ) {
     currentAccount.movements.push(loan);
-    console.log(`Loan for ${loan} has been approved`);
+    currentAccount.movementsDates.push(transferDate);
 
     inputLoanAmount.value = '';
     inputLoanAmount.blur();
 
     updateUI();
-  } else {
-    console.error(`Loan for ${loan} has been denied`);
   }
 };
 
 const sortMovements = function () {
   if (!sortedMaxToMin) {
     currentAccount.movements.sort((a, b) => (a < b ? -1 : 1));
+    // currentAccount.movementsDates.sort((a, b) => (a < b ? -1 : 1));
     labelSort.textContent = 'arrow_upward';
     sortedMaxToMin = true;
   } else {
     currentAccount.movements.sort((a, b) => (a > b ? -1 : 1));
+    // currentAccount.movementsDates.sort((a, b) => (a > b ? -1 : 1));
     labelSort.textContent = 'arrow_downward';
     sortedMaxToMin = false;
   }
@@ -286,6 +367,8 @@ const login = function (e) {
       labelWelcome.textContent = `Welcome back, ${
         currentAccount.owner.split(' ')[0]
       }`;
+
+      labelDate.textContent = displayDate();
 
       createAccountNumber();
       // sortMovements();
