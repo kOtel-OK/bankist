@@ -5,6 +5,7 @@ const account1 = {
   owner: 'Roman Kotelnykov',
   accountNumber: 5199304798345699,
   movements: [22200, 450, -400, 3000, -650, -130, 70, 1300],
+  mo: [{ m: 22200, d: '2019-11-18T21:31:17.178Z' }],
   interestRate: 1.2, // %
   pin: 1111,
   movementsDates: [
@@ -59,7 +60,7 @@ const accounts = [account1, account2];
 
 let currentAccount;
 let timeCounter;
-let timeTimer;
+// let timeTimer;
 let accNameMasked;
 let accNameVisibled;
 //state variables
@@ -244,7 +245,7 @@ const updateUI = function () {
   displayMovements(currentAccount);
   calculateBalance(currentAccount.movements);
   calculateSummary(currentAccount.movements);
-  logOutTimer(10, 5); //set minutes and seconds to reset logout timer
+  logOutTimer(0, 30, currentAccount.locale); //set minutes and seconds to reset logout timer
 };
 
 const transferMoney = function (e) {
@@ -283,13 +284,16 @@ const loanRequests = function (e) {
     loan > 0 &&
     currentAccount.movements.some(el => el > loan + (loan / 100) * 10)
   ) {
-    currentAccount.movements.push(loan);
-    currentAccount.movementsDates.push(transferDate);
+    setTimeout(() => {
+      //simulating banc accteption delaying fot the loan
+      currentAccount.movements.push(loan);
+      currentAccount.movementsDates.push(transferDate);
+
+      updateUI();
+    }, 3000);
 
     inputLoanAmount.value = '';
     inputLoanAmount.blur();
-
-    updateUI();
   }
 };
 
@@ -326,31 +330,31 @@ const closeAccount = function (e) {
   }
 };
 
-const logOutTimer = function (min = 5, sec = 0) {
-  timeCounter && clearInterval(timeCounter) && clearTimeout(timeTimer);
+const logOutTimer = function (min = 5, sec = 0, locale) {
+  timeCounter && clearInterval(timeCounter);
 
-  let timeToLogOut = (min * 60 + sec) * 1000; //convert total time to milleseconds
+  const timer = () => {
+    //separate function to preventing delaying of timer execution
+    const options = {
+      minute: 'numeric',
+      second: 'numeric',
+    };
 
-  timeCounter = setInterval(function () {
-    if (sec === 0) {
-      min -= 1;
-      sec = 59;
-    } else {
-      sec -= 1;
+    labelTimer.textContent = Intl.DateTimeFormat(locale, options).format(time);
+
+    if (time === 0) {
+      clearInterval(timeCounter);
+
+      containerApp.style.opacity = '0';
+      labelWelcome.textContent = 'Log in to get started';
     }
 
-    timeToLogOut -= 1000;
-    labelTimer.textContent = `${String(min).length === 1 ? '0' + min : min}:${
-      String(sec).length === 1 ? '0' + sec : sec
-    }`;
-  }, 1000);
+    time -= 1000;
+  };
+  let time = (min * 60 + sec) * 1000;
+  timer(); //calling function before timer
 
-  timeTimer = setTimeout(function () {
-    // clearInterval(timeCounter);
-
-    containerApp.style.opacity = '0';
-    labelWelcome.textContent = 'Log in to get started';
-  }, timeToLogOut);
+  timeCounter = setInterval(timer, 1000);
 };
 
 const login = function (e) {
