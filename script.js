@@ -1,6 +1,20 @@
 'use strict';
 
 ///////////////////////////////////////
+// Main navigation
+
+const nav = document.querySelector('.nav__links');
+
+nav.addEventListener('click', function (e) {
+  const target = e.target.getAttribute('href');
+
+  if (e.target.hasAttribute('href') && !!target.slice(1)) {
+    e.preventDefault();
+    document.querySelector(target).scrollIntoView({ behavior: 'smooth' });
+  }
+});
+
+///////////////////////////////////////
 // Modal window
 
 const modal = document.querySelector('.modal');
@@ -31,50 +45,38 @@ document.addEventListener('keydown', function (e) {
   }
 });
 
-// // returns all html document
-// document.documentElement;
-
-// // returns special parts of html
-// document.head;
-// document.body;
-
-// // returns the first matches element
-// document.querySelector('.header');
-
-// // returns Nodelist of all matches elements
-// document.querySelectorAll('.section');
-
-// // returns element by ID
-// document.getElementById('section--1');
-
-// // returns HTMLCollection of all elements by element name
-// document.getElementsByTagName('button'); // returns all buttons
-
-// // returns HTMLCollection of all elements by class name
-// document.getElementsByClassName('btn');
+///////////////////////////////////////
+// Cookies window
 
 // creates and returns DOM element
 // can be uses only ones - becose it is a 'live' element of HTMLCollection
 const message = document.createElement('div'); // not yet in the DOM
 message.classList.add('cookie-message');
+message.style.top = `${this.document.documentElement.clientHeight - 40}px`;
+
 // message.textContent = 'We use cookies for impoved functuanality and analytics';
 message.innerHTML = `We use cookies for impoved functuanality and analytics. <button class=" btn--close--cookie">Got it!</button>`;
 
-// prepend - inserts created element as a first child of a parent element
-// document.querySelector('.header').prepend(message);
-// append - inserts created element as a last child of a parent element
-// document.querySelector('.header').append(message);
-// before - inserts created element before of a parent element
-// document.querySelector('.header').before(message);
-// after - inserts created element after of a parent element
-// document.querySelector('.header').after(message);
-// if we want use element multiple times, we must create a copy of this element
-// .cloneNode - makes copy of element
-
-// insertAdjacentElement - unserts an element - 'beforebegin', 'afterbegin', 'beforeend', 'afterend'
+// insertAdjacentElement - inserts an element - 'beforebegin', 'afterbegin', 'beforeend', 'afterend'
 document.querySelector('.header').insertAdjacentElement('beforebegin', message);
 
+window.addEventListener('resize', function () {
+  message.style.top = `${this.document.documentElement.clientHeight - 40}px`;
+});
+
 // remove() - removse the element from the DOM
-document
-  .querySelector('.btn--close--cookie')
-  .addEventListener('click', () => message.remove());
+document.querySelector('.btn--close--cookie').onclick = () => message.remove();
+
+///////////////////////////////////////
+// Scroll to section 1
+
+const btnScrollTo = document.querySelector('.btn--scroll-to');
+const section1 = document.getElementById('section--1');
+
+btnScrollTo.addEventListener('click', function (e) {
+  // properties x, y of BoundingClientRect relative to viewport - distance from element to top or left border of the page`s visible part
+  const s1coords = section1.getBoundingClientRect();
+
+  // Scrolling MODERN WAY;))
+  section1.scrollIntoView({ behavior: 'smooth' });
+});
