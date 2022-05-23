@@ -15,6 +15,20 @@ nav.addEventListener('click', function (e) {
 });
 
 ///////////////////////////////////////
+// Scroll to section 1
+
+const btnScrollTo = document.querySelector('.btn--scroll-to');
+const section1 = document.getElementById('section--1');
+
+btnScrollTo.addEventListener('click', function (e) {
+  // properties x, y of BoundingClientRect relative to viewport - distance from element to top or left border of the page`s visible part
+  const s1coords = section1.getBoundingClientRect();
+
+  // Scrolling MODERN WAY;))
+  section1.scrollIntoView({ behavior: 'smooth' });
+});
+
+///////////////////////////////////////
 // Modal window
 
 const modal = document.querySelector('.modal');
@@ -46,6 +60,34 @@ document.addEventListener('keydown', function (e) {
 });
 
 ///////////////////////////////////////
+// Tabbed component
+
+document
+  .querySelector('.operations__tab-container')
+  .addEventListener('click', function (e) {
+    const tabBtn = e.target.closest('button');
+
+    // Guard clause
+    // Prevents of code execution if condition false
+    if (!tabBtn) return;
+
+    const content = document.querySelector(
+      `.operations__content--${tabBtn.dataset.tab}`
+    );
+
+    document
+      .querySelectorAll('.operations__content')
+      .forEach(el => el.classList.remove('operations__content--active'));
+
+    document
+      .querySelectorAll('.operations__tab')
+      .forEach(el => el.classList.remove('operations__tab--active'));
+
+    content.classList.add('operations__content--active');
+    tabBtn.classList.add('operations__tab--active');
+  });
+
+///////////////////////////////////////
 // Cookies window
 
 // creates and returns DOM element
@@ -66,17 +108,3 @@ window.addEventListener('resize', function () {
 
 // remove() - removse the element from the DOM
 document.querySelector('.btn--close--cookie').onclick = () => message.remove();
-
-///////////////////////////////////////
-// Scroll to section 1
-
-const btnScrollTo = document.querySelector('.btn--scroll-to');
-const section1 = document.getElementById('section--1');
-
-btnScrollTo.addEventListener('click', function (e) {
-  // properties x, y of BoundingClientRect relative to viewport - distance from element to top or left border of the page`s visible part
-  const s1coords = section1.getBoundingClientRect();
-
-  // Scrolling MODERN WAY;))
-  section1.scrollIntoView({ behavior: 'smooth' });
-});
