@@ -15,6 +15,22 @@ nav.addEventListener('click', function (e) {
 });
 
 ///////////////////////////////////////
+// Nav fading effect
+
+const navFadeHandler = function (e) {
+  if (e.target.classList.contains('nav__link')) {
+    [...nav.children].forEach(el => {
+      if (el !== e.target.parentElement) {
+        el.style.opacity = this;
+      }
+    });
+  }
+};
+
+nav.addEventListener('mouseover', navFadeHandler.bind(0.5));
+nav.addEventListener('mouseout', navFadeHandler.bind(1));
+
+///////////////////////////////////////
 // Scroll to section 1
 
 const btnScrollTo = document.querySelector('.btn--scroll-to');
