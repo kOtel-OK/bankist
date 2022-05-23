@@ -1,11 +1,19 @@
 'use strict';
 
+const nav = document.querySelector('.nav');
+const navLinks = document.querySelector('.nav__links');
+const btnScrollTo = document.querySelector('.btn--scroll-to');
+const section1 = document.getElementById('section--1');
+
+const modal = document.querySelector('.modal');
+const overlay = document.querySelector('.overlay');
+const btnCloseModal = document.querySelector('.btn--close-modal');
+const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
+
 ///////////////////////////////////////
 // Main navigation
 
-const nav = document.querySelector('.nav__links');
-
-nav.addEventListener('click', function (e) {
+navLinks.addEventListener('click', function (e) {
   const target = e.target.getAttribute('href');
 
   if (e.target.hasAttribute('href') && !!target.slice(1)) {
@@ -19,7 +27,7 @@ nav.addEventListener('click', function (e) {
 
 const navFadeHandler = function (e) {
   if (e.target.classList.contains('nav__link')) {
-    [...nav.children].forEach(el => {
+    [...navLinks.children].forEach(el => {
       if (el !== e.target.parentElement) {
         el.style.opacity = this;
       }
@@ -27,14 +35,11 @@ const navFadeHandler = function (e) {
   }
 };
 
-nav.addEventListener('mouseover', navFadeHandler.bind(0.5));
-nav.addEventListener('mouseout', navFadeHandler.bind(1));
+navLinks.addEventListener('mouseover', navFadeHandler.bind(0.5));
+navLinks.addEventListener('mouseout', navFadeHandler.bind(1));
 
 ///////////////////////////////////////
 // Scroll to section 1
-
-const btnScrollTo = document.querySelector('.btn--scroll-to');
-const section1 = document.getElementById('section--1');
 
 btnScrollTo.addEventListener('click', function (e) {
   // properties x, y of BoundingClientRect relative to viewport - distance from element to top or left border of the page`s visible part
@@ -45,12 +50,20 @@ btnScrollTo.addEventListener('click', function (e) {
 });
 
 ///////////////////////////////////////
-// Modal window
+// Sticky Navigation
+//Use scroll event - bad practice, because of perfomance
+window.addEventListener('scroll', function (e) {
+  const stickyPoint = section1.getBoundingClientRect().top;
 
-const modal = document.querySelector('.modal');
-const overlay = document.querySelector('.overlay');
-const btnCloseModal = document.querySelector('.btn--close-modal');
-const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
+  if (stickyPoint <= 0) {
+    nav.classList.add('sticky');
+  } else {
+    nav.classList.remove('sticky');
+  }
+});
+
+///////////////////////////////////////
+// Modal window
 
 const openModal = function (e) {
   e.preventDefault();
