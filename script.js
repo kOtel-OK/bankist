@@ -2,6 +2,7 @@
 
 const nav = document.querySelector('.nav');
 const navLinks = document.querySelector('.nav__links');
+const header = document.querySelector('.header');
 const btnScrollTo = document.querySelector('.btn--scroll-to');
 const section1 = document.getElementById('section--1');
 
@@ -30,12 +31,13 @@ const navFadeHandler = function (e) {
     [...navLinks.children].forEach(el => {
       if (el !== e.target.parentElement) {
         el.style.opacity = this;
+        el.style.transition = 'all, 0.5s';
       }
     });
   }
 };
 
-navLinks.addEventListener('mouseover', navFadeHandler.bind(0.5));
+navLinks.addEventListener('mouseover', navFadeHandler.bind(0.4));
 navLinks.addEventListener('mouseout', navFadeHandler.bind(1));
 
 ///////////////////////////////////////
@@ -51,16 +53,26 @@ btnScrollTo.addEventListener('click', function (e) {
 
 ///////////////////////////////////////
 // Sticky Navigation
-//Use scroll event - bad practice, because of perfomance
-window.addEventListener('scroll', function (e) {
-  const stickyPoint = section1.getBoundingClientRect().top;
+// Modern and more perfomanced way with Intersection Observer API
+const obsCallback = function (entries, observer) {
+  const [entry] = entries; // Entries destructuring
 
-  if (stickyPoint <= 0) {
+  if (!entry.isIntersecting) {
+    // isIntersecting - property, described if the target intersects the root
     nav.classList.add('sticky');
   } else {
     nav.classList.remove('sticky');
   }
-});
+};
+
+const obsOptions = {
+  root: null, // Null means viewport
+  rootMargin: `-${nav.getBoundingClientRect().height}px`,
+  threshold: 0, //
+};
+const observer = new IntersectionObserver(obsCallback, obsOptions);
+
+observer.observe(header); // Target
 
 ///////////////////////////////////////
 // Modal window
