@@ -5,6 +5,7 @@ const navLinks = document.querySelector('.nav__links');
 const header = document.querySelector('.header');
 const btnScrollTo = document.querySelector('.btn--scroll-to');
 const section1 = document.getElementById('section--1');
+const allSections = document.querySelectorAll('.section');
 
 const modal = document.querySelector('.modal');
 const overlay = document.querySelector('.overlay');
@@ -73,6 +74,37 @@ const obsOptions = {
 const observer = new IntersectionObserver(obsCallback, obsOptions);
 
 observer.observe(header); // Target
+
+///////////////////////////////////////
+// Sections Revealing with Intersection Observer API
+
+allSections.forEach(el => el.classList.add('section--hidden'));
+
+const sectionObsCallback = function (entries, observer) {
+  const [entry] = entries;
+
+  // Guard clause
+  if (!entry.isIntersecting) return;
+
+  entry.target.classList.remove('section--hidden');
+  observer.unobserve(entry.target);
+};
+
+const sectionObsOptions = {
+  root: null,
+  // delay: 0, // Delaying in milliseconds
+  // rootMargin: '0px',
+  threshold: 0.2,
+};
+
+const sectionObserver = new IntersectionObserver(
+  sectionObsCallback,
+  sectionObsOptions
+);
+
+allSections.forEach(el => {
+  sectionObserver.observe(el);
+});
 
 ///////////////////////////////////////
 // Modal window
