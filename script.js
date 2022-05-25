@@ -3,12 +3,13 @@
 const nav = document.querySelector('.nav');
 const navLinks = document.querySelector('.nav__links');
 const header = document.querySelector('.header');
-const btnScrollTo = document.querySelector('.btn--scroll-to');
-const section1 = document.getElementById('section--1');
 const allSections = document.querySelectorAll('.section');
+const featuresImages = document.querySelectorAll('img[data-src]');
 
 const modal = document.querySelector('.modal');
 const overlay = document.querySelector('.overlay');
+
+const btnScrollTo = document.querySelector('.btn--scroll-to');
 const btnCloseModal = document.querySelector('.btn--close-modal');
 const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
 
@@ -45,16 +46,14 @@ navLinks.addEventListener('mouseout', navFadeHandler.bind(1));
 // Scroll to section 1
 
 btnScrollTo.addEventListener('click', function (e) {
-  // properties x, y of BoundingClientRect relative to viewport - distance from element to top or left border of the page`s visible part
-  const s1coords = section1.getBoundingClientRect();
-
   // Scrolling MODERN WAY;))
-  section1.scrollIntoView({ behavior: 'smooth' });
+  allSections[0].scrollIntoView({ behavior: 'smooth' });
 });
 
 ///////////////////////////////////////
 // Sticky Navigation
 // Modern and more perfomanced way with Intersection Observer API
+
 const obsCallback = function (entries, observer) {
   const [entry] = entries; // Entries destructuring
 
@@ -104,6 +103,31 @@ const sectionObserver = new IntersectionObserver(
 
 allSections.forEach(el => {
   sectionObserver.observe(el);
+});
+
+///////////////////////////////////////
+// Lazy Loading Images
+const featuresImgsCallback = function (entries) {
+  const [entry] = entries;
+
+  if (!entry.isIntersecting) return;
+
+  entry.target.setAttribute('src', entry.target.dataset.src);
+
+  // Listening when an image has loaded
+  entry.target.addEventListener('load', function () {
+    this.classList.remove('lazy-img');
+    featuresObserver.unobserve(entry.target);
+  });
+};
+
+const featuresObserver = new IntersectionObserver(featuresImgsCallback, {
+  root: null,
+  threshold: 0.4,
+});
+
+featuresImages.forEach(el => {
+  featuresObserver.observe(el);
 });
 
 ///////////////////////////////////////
