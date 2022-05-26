@@ -12,6 +12,8 @@ const overlay = document.querySelector('.overlay');
 const btnScrollTo = document.querySelector('.btn--scroll-to');
 const btnCloseModal = document.querySelector('.btn--close-modal');
 const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
+const btnSliderLeft = document.querySelector('.slider__btn--left');
+const btnSliderRight = document.querySelector('.slider__btn--right');
 
 ///////////////////////////////////////
 // Main navigation
@@ -123,12 +125,95 @@ const featuresImgsCallback = function (entries) {
 
 const featuresObserver = new IntersectionObserver(featuresImgsCallback, {
   root: null,
-  threshold: 0.4,
+  threshold: 0,
 });
 
 featuresImages.forEach(el => {
   featuresObserver.observe(el);
 });
+
+///////////////////////////////////////
+// Slider
+const slider = function () {
+  const slider = document.querySelector('.slider');
+  const slides = document.querySelectorAll('.slide');
+  const sliderDotsContainer = document.querySelector('.dots');
+  let currentSlide = 0;
+  const maxSlide = slides.length - 1;
+
+  const createDots = function () {
+    slides.forEach((_, idx) => {
+      // _ - throw away variable
+      const span = document.createElement('span');
+
+      span.classList.add('dots__dot');
+      span.dataset.dot = idx;
+      sliderDotsContainer.insertAdjacentElement('beforeend', span);
+    });
+  };
+
+  const sliderViewedArea = function () {
+    const viewportHeight = document.documentElement.clientHeight;
+    const sliderTop = slider.getBoundingClientRect().top;
+    const sliderArea = viewportHeight - sliderTop;
+    const sliderAreaMax =
+      viewportHeight + slider.getBoundingClientRect().height;
+
+    return sliderArea > 0 && sliderArea <= sliderAreaMax ? true : false;
+  };
+
+  const slideMovement = function (slide = 0) {
+    const dots = document.querySelectorAll('.dots__dot');
+    currentSlide = slide;
+
+    slides.forEach(
+      (el, idx) =>
+        (el.style.transform = `translateX(${(idx - currentSlide) * 100}%)`)
+    );
+
+    dots.forEach(el => el.classList.remove('dots__dot--active'));
+    dots[currentSlide].classList.add('dots__dot--active');
+  };
+
+  const nextSlide = function () {
+    if (currentSlide >= maxSlide) {
+      currentSlide = 0;
+    } else {
+      currentSlide++;
+    }
+
+    slideMovement(currentSlide);
+  };
+
+  const prevSlide = function () {
+    if (currentSlide === 0) {
+      currentSlide = maxSlide;
+    } else {
+      currentSlide--;
+    }
+
+    slideMovement(currentSlide);
+  };
+
+  createDots();
+  // Start position 0, 100, 200
+  slideMovement();
+
+  btnSliderRight.addEventListener('click', nextSlide);
+  btnSliderLeft.addEventListener('click', prevSlide);
+  document.addEventListener('keydown', function (e) {
+    if (!sliderViewedArea()) return;
+
+    e.key === 'ArrowRight' && nextSlide();
+    e.key === 'ArrowLeft' && prevSlide();
+  });
+
+  sliderDotsContainer.addEventListener('click', function (e) {
+    e.target.tagName === 'SPAN' && slideMovement(e.target.dataset.dot);
+  });
+};
+
+slider();
 
 ///////////////////////////////////////
 // Modal window
